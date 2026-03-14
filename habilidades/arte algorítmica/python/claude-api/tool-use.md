@@ -1,92 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Tool Use — Python</title>
+# Tool Use — Python
 
-<style>
-body{
- font-family: Arial, Helvetica, sans-serif;
- background:#0f172a;
- color:#e5e7eb;
- margin:0;
- padding:40px;
-}
+Para uma visão conceitual sobre definição de ferramentas, escolha de ferramentas e dicas, veja `shared/tool-use-concepts.md`.
 
-h1{ color:#38bdf8; }
-h2{ color:#22c55e; margin-top:40px; }
-h3{ color:#facc15; }
+---
 
-p{ color:#cbd5f5; }
+## Tool Runner (Recommended)
 
-pre{
- background:#020617;
- padding:20px;
- border-radius:10px;
- overflow:auto;
- border:1px solid #1e293b;
-}
+**Beta:** O tool runner está em beta no SDK Python.
 
-code{ color:#38bdf8; }
+Use o decorator `@beta_tool` para definir ferramentas como funções tipadas e passe-as para `client.beta.messages.tool_runner()`:
 
-table{
- width:100%;
- border-collapse:collapse;
- margin-top:20px;
-}
-
-th, td{
- border:1px solid #1e293b;
- padding:10px;
-}
-
-th{
- background:#020617;
-}
-
-hr{
- border:none;
- border-top:1px solid #1e293b;
- margin:40px 0;
-}
-
-blockquote{
- border-left:4px solid #38bdf8;
- padding-left:15px;
- color:#cbd5f5;
-}
-</style>
-</head>
-
-<body>
-
-<h1>Tool Use — Python</h1>
-
-<p>For conceptual overview (tool definitions, tool choice, tips), see shared/tool-use-concepts.md.</p>
-
-<h2>Tool Runner (Recommended)</h2>
-
-<p><strong>Beta:</strong> The tool runner is in beta in the Python SDK.</p>
-
-<p>Use the <code>@beta_tool</code> decorator to define tools as typed functions, then pass them to <code>client.beta.messages.tool_runner()</code>:</p>
-
-<pre><code>import anthropic
+```python
+import anthropic
 from anthropic import beta_tool
 
 client = anthropic.Anthropic()
 
 @beta_tool
 def get_weather(location: str, unit: str = "celsius") -> str:
-    """Get current weather for a location.
-
-    Args:
-        location: City and state, e.g., San Francisco, CA.
-        unit: Temperature unit, either "celsius" or "fahrenheit".
-    """
-    # Your implementation here
+    """Get current weather for a location."""
     return f"72°F and sunny in {location}"
 
-# The tool runner handles the agentic loop automatically
 runner = client.beta.messages.tool_runner(
     model="claude-opus-4-6",
     max_tokens=4096,
@@ -94,26 +28,25 @@ runner = client.beta.messages.tool_runner(
     messages=[{"role": "user", "content": "What's the weather in Paris?"}],
 )
 
-# Each iteration yields a BetaMessage; iteration stops when Claude is done
 for message in runner:
     print(message)
-</code></pre>
+```
 
-<p>For async usage, use <code>@beta_async_tool</code> with <code>async def</code> functions.</p>
+Para uso assíncrono, use `@beta_async_tool` com funções `async def`.
 
-<hr>
+---
 
-<h2>MCP Tool Conversion Helpers</h2>
+## MCP Tool Conversion Helpers
 
-<p><strong>Beta.</strong> Convert MCP (Model Context Protocol) tools, prompts, and resources to Anthropic API types for use with the tool runner. Requires <code>pip install anthropic[mcp]</code> (Python 3.10+).</p>
+**Beta:** Converta ferramentas MCP (Model Context Protocol), prompts e recursos para tipos da Anthropic API.  
+Requer `pip install anthropic[mcp]` (Python 3.10+).
 
-<blockquote>
-Note: The Claude API also supports an <code>mcp_servers</code> parameter that lets Claude connect directly to remote MCP servers.
-</blockquote>
+> Nota: A API Claude também suporta o parâmetro `mcp_servers` para conectar-se diretamente a servidores MCP remotos.
 
-<h3>MCP Tools with Tool Runner</h3>
+### MCP Tools com Tool Runner
 
-<pre><code>from anthropic import AsyncAnthropic
+```python
+from anthropic import AsyncAnthropic
 from anthropic.lib.tools.mcp import async_mcp_tool
 from mcp import ClientSession
 from mcp.client.stdio import stdio_client, StdioServerParameters
@@ -123,7 +56,6 @@ client = AsyncAnthropic()
 async with stdio_client(StdioServerParameters(command="mcp-server")) as (read, write):
     async with ClientSession(read, write) as mcp_client:
         await mcp_client.initialize()
-
         tools_result = await mcp_client.list_tools()
         runner = await client.beta.messages.tool_runner(
             model="claude-opus-4-6",
@@ -133,13 +65,14 @@ async with stdio_client(StdioServerParameters(command="mcp-server")) as (read, w
         )
         async for message in runner:
             print(message)
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Manual Agentic Loop</h2>
+## Manual Agentic Loop
 
-<pre><code>import anthropic
+```python
+import anthropic
 
 client = anthropic.Anthropic()
 tools = [...]
@@ -155,25 +88,27 @@ while True:
 
     if response.stop_reason == "end_turn":
         break
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Handling Tool Results</h2>
+## Handling Tool Results
 
-<pre><code>response = client.messages.create(
+```python
+response = client.messages.create(
     model="claude-opus-4-6",
     max_tokens=1024,
     tools=tools,
     messages=[{"role": "user", "content": "What's the weather in Paris?"}]
 )
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Multiple Tool Calls</h2>
+## Multiple Tool Calls
 
-<pre><code>tool_results = []
+```python
+tool_results = []
 
 for block in response.content:
     if block.type == "tool_use":
@@ -183,58 +118,56 @@ for block in response.content:
             "tool_use_id": block.id,
             "content": result
         })
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Error Handling in Tool Results</h2>
+## Error Handling in Tool Results
 
-<pre><code>tool_result = {
+```python
+tool_result = {
     "type": "tool_result",
     "tool_use_id": tool_use_id,
     "content": "Error: Location 'xyz' not found. Please provide a valid city name.",
     "is_error": True
 }
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Tool Choice</h2>
+## Tool Choice
 
-<pre><code>tool_choice={"type": "tool", "name": "get_weather"}
-</code></pre>
+```python
+tool_choice={"type": "tool", "name": "get_weather"}
+```
 
-<hr>
+---
 
-<h2>Code Execution</h2>
+## Code Execution
 
-<h3>Basic Usage</h3>
+### Basic Usage
 
-<pre><code>import anthropic
+```python
+import anthropic
 
 client = anthropic.Anthropic()
 
 response = client.messages.create(
     model="claude-opus-4-6",
     max_tokens=4096,
-    messages=[{
-        "role": "user",
-        "content": "Calculate the mean and standard deviation"
-    }],
-    tools=[{
-        "type": "code_execution_20260120",
-        "name": "code_execution"
-    }]
+    messages=[{"role": "user", "content": "Calculate the mean and standard deviation"}],
+    tools=[{"type": "code_execution_20260120", "name": "code_execution"}]
 )
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Memory Tool</h2>
+## Memory Tool
 
-<h3>Basic Usage</h3>
+### Basic Usage
 
-<pre><code>import anthropic
+```python
+import anthropic
 
 client = anthropic.Anthropic()
 
@@ -244,15 +177,16 @@ response = client.messages.create(
     messages=[{"role": "user", "content": "Remember that my preferred language is Python."}],
     tools=[{"type": "memory_20250818", "name": "memory"}],
 )
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Structured Outputs</h2>
+## Structured Outputs
 
-<h3>JSON Outputs (Pydantic — Recommended)</h3>
+### JSON Outputs (Pydantic — Recommended)
 
-<pre><code>from pydantic import BaseModel
+```python
+from pydantic import BaseModel
 from typing import List
 import anthropic
 
@@ -262,32 +196,29 @@ class ContactInfo(BaseModel):
     plan: str
     interests: List[str]
     demo_requested: bool
-</code></pre>
+```
 
-<h3>Raw Schema</h3>
+### Raw Schema
 
-<pre><code>output_config={
+```python
+output_config={
  "format":{
   "type":"json_schema"
  }
 }
-</code></pre>
+```
 
-<h3>Strict Tool Use</h3>
+### Strict Tool Use
 
-<pre><code>tools=[{
- "name":"book_flight",
- "strict":True
-}]
-</code></pre>
+```python
+tools=[{"name":"book_flight","strict":True}]
+```
 
-<h3>Using Both Together</h3>
+### Using Both Together
 
-<pre><code>response = client.messages.create(
+```python
+response = client.messages.create(
  model="claude-opus-4-6",
  max_tokens=1024
 )
-</code></pre>
-
-</body>
-</html>
+```
