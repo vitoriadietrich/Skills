@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+    <div>
 <title>Claude API — Python</title>
 
 <style>
@@ -65,6 +66,7 @@ hr{
 }
 
 </style>
+</div>
 </head>
 
 <body>
