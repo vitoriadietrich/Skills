@@ -165,7 +165,8 @@ response = client.messages.create(
                 "type": "image",
                 "source": {
                     "type": "url",
-                    "url": "https://example.com/image.png"
+                    ""url": "https://example.com/image.png"
+"
                 }
             },
             {"type": "text", "text": "Describe this image"}
