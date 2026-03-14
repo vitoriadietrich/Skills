@@ -1,101 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Claude API — Python</title>
+# Claude API — Python
 
-<style>
+---
 
-body{
-    font-family: Arial, Helvetica, sans-serif;
-    background:#0f172a;
-    color:#e5e7eb;
-    margin:0;
-    padding:40px;
-}
+## Installation
 
-h1{
-    color:#38bdf8;
-}
+```bash
+pip install anthropic
+```
 
-h2{
-    color:#22c55e;
-    margin-top:40px;
-}
+---
 
-h3{
-    color:#facc15;
-}
+## Client Initialization
 
-p{
-    color:#cbd5f5;
-}
-
-pre{
-    background:#020617;
-    padding:20px;
-    border-radius:10px;
-    overflow:auto;
-    border:1px solid #1e293b;
-}
-
-code{
-    color:#38bdf8;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
-}
-
-th, td{
-    border:1px solid #1e293b;
-    padding:10px;
-}
-
-th{
-    background:#020617;
-}
-
-hr{
-    border:none;
-    border-top:1px solid #1e293b;
-    margin:40px 0;
-}
-
-</style>
-</head>
-
-<body>
-
-<h1>Claude API — Python</h1>
-
-<hr>
-
-<h2>Installation</h2>
-
-<pre><code>pip install anthropic</code></pre>
-
-<hr>
-
-<h2>Client Initialization</h2>
-
-<pre><code>
+```python
 import anthropic
 
+# Default (uses ANTHROPIC_API_KEY env var)
 client = anthropic.Anthropic()
 
+# Explicit API key
 client = anthropic.Anthropic(api_key="your-api-key")
 
+# Async client
 async_client = anthropic.AsyncAnthropic()
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Basic Message Request</h2>
+## Basic Message Request
 
-<pre><code>
+```python
 response = client.messages.create(
     model="claude-opus-4-6",
     max_tokens=1024,
@@ -105,28 +39,28 @@ response = client.messages.create(
 )
 
 print(response.content[0].text)
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>System Prompts</h2>
+## System Prompts
 
-<pre><code>
+```python
 response = client.messages.create(
     model="claude-opus-4-6",
     max_tokens=1024,
     system="You are a helpful coding assistant. Always provide examples in Python.",
     messages=[{"role": "user", "content": "How do I read a JSON file?"}]
 )
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Vision (Images)</h2>
+## Vision (Images)
 
-<h3>Base64</h3>
+### Base64
 
-<pre><code>
+```python
 import base64
 
 with open("image.png", "rb") as f:
@@ -150,11 +84,11 @@ response = client.messages.create(
         ]
     }]
 )
-</code></pre>
+```
 
-<h3>URL</h3>
+### URL
 
-<pre><code>
+```python
 response = client.messages.create(
     model="claude-opus-4-6",
     max_tokens=1024,
@@ -172,13 +106,13 @@ response = client.messages.create(
         ]
     }]
 )
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Extended Thinking</h2>
+## Extended Thinking
 
-<pre><code>
+```python
 response = client.messages.create(
     model="claude-opus-4-6",
     max_tokens=16000,
@@ -192,13 +126,13 @@ for block in response.content:
         print(block.thinking)
     elif block.type == "text":
         print(block.text)
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Error Handling</h2>
+## Error Handling
 
-<pre><code>
+```python
 import anthropic
 
 try:
@@ -209,13 +143,13 @@ except anthropic.AuthenticationError:
     print("Invalid API key")
 except anthropic.RateLimitError:
     print("Rate limited")
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Multi-Turn Conversations</h2>
+## Multi-Turn Conversations
 
-<pre><code>
+```python
 class ConversationManager:
 
     def __init__(self, client, model, system=None):
@@ -245,81 +179,51 @@ class ConversationManager:
         })
 
         return text
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Stop Reasons</h2>
+## Stop Reasons
 
-<table>
+| Value        | Meaning                        |
+| ------------ | ------------------------------ |
+| end_turn     | Claude finished the response   |
+| max_tokens   | Reached max_tokens limit       |
+| stop_sequence| Custom stop sequence triggered |
+| tool_use     | Claude wants to call a tool    |
+| pause_turn   | Model paused execution         |
+| refusal      | Safety refusal                 |
 
-<tr>
-<th>Value</th>
-<th>Meaning</th>
-</tr>
+---
 
-<tr>
-<td>end_turn</td>
-<td>Claude finished the response</td>
-</tr>
+## Cost Optimization
 
-<tr>
-<td>max_tokens</td>
-<td>Reached max_tokens limit</td>
-</tr>
+### Choose the Right Model
 
-<tr>
-<td>stop_sequence</td>
-<td>Custom stop sequence triggered</td>
-</tr>
-
-<tr>
-<td>tool_use</td>
-<td>Claude wants to call a tool</td>
-</tr>
-
-<tr>
-<td>pause_turn</td>
-<td>Model paused execution</td>
-</tr>
-
-<tr>
-<td>refusal</td>
-<td>Safety refusal</td>
-</tr>
-
-</table>
-
-<hr>
-
-<h2>Cost Optimization</h2>
-
-<h3>Choose the Right Model</h3>
-
-<pre><code>
+```python
 model="claude-opus-4-6"
 model="claude-sonnet-4-6"
 model="claude-haiku-4-5"
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Token Counting</h2>
+## Token Counting
 
-<pre><code>
+```python
 count = client.messages.count_tokens(
     model="claude-opus-4-6",
     messages=messages
 )
 
 print(count.input_tokens)
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Retry with Exponential Backoff</h2>
+## Retry with Exponential Backoff
 
-<pre><code>
+```python
 import time
 import random
 
@@ -334,7 +238,4 @@ def retry():
 
             delay = 2 ** attempt + random.random()
             time.sleep(delay)
-</code></pre>
-
-</body>
-</html>
+```
