@@ -1,90 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Message Batches API — Python</title>
+# Message Batches API — Python
 
-<style>
+O Batches API (`POST /v1/messages/batches`) processa requisições da Messages API de forma **assíncrona** com **50% do custo normal**.
 
-body{
-    font-family: Arial, Helvetica, sans-serif;
-    background:#0f172a;
-    color:#e5e7eb;
-    margin:0;
-    padding:40px;
-}
+---
 
-h1{
-    color:#38bdf8;
-}
+## Key Facts
 
-h2{
-    color:#22c55e;
-    margin-top:40px;
-}
+- Até **100.000 requisições** ou **256 MB** por batch
+- A maioria dos batches é concluída em **1 hora**; máximo de **24 horas**
+- Resultados disponíveis por **29 dias** após a criação
+- **50% de redução de custo** em todos os tokens
+- Todos os recursos da Messages API suportados (vision, tools, caching, etc.)
 
-h3{
-    color:#facc15;
-}
+---
 
-p{
-    color:#cbd5f5;
-}
+## Create a Batch
 
-pre{
-    background:#020617;
-    padding:20px;
-    border-radius:10px;
-    overflow:auto;
-    border:1px solid #1e293b;
-}
-
-code{
-    color:#38bdf8;
-}
-
-ul{
-    margin-top:10px;
-}
-
-li{
-    margin-bottom:6px;
-}
-
-hr{
-    border:none;
-    border-top:1px solid #1e293b;
-    margin:40px 0;
-}
-
-</style>
-</head>
-
-<body>
-
-<h1>Message Batches API — Python</h1>
-
-<p>
-The Batches API (<code>POST /v1/messages/batches</code>) processes Messages API requests asynchronously at <b>50% of standard prices</b>.
-</p>
-
-<hr>
-
-<h2>Key Facts</h2>
-
-<ul>
-<li>Up to <b>100,000 requests</b> or <b>256 MB</b> per batch</li>
-<li>Most batches complete within <b>1 hour</b>; maximum <b>24 hours</b></li>
-<li>Results available for <b>29 days</b> after creation</li>
-<li><b>50% cost reduction</b> on all token usage</li>
-<li>All Messages API features supported (vision, tools, caching, etc.)</li>
-</ul>
-
-<hr>
-
-<h2>Create a Batch</h2>
-
-<pre><code>
+```python
 import anthropic
 from anthropic.types.message_create_params import MessageCreateParamsNonStreaming
 from anthropic.types.messages.batch_create_params import Request
@@ -114,13 +46,13 @@ message_batch = client.messages.batches.create(
 
 print(message_batch.id)
 print(message_batch.processing_status)
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Poll for Completion</h2>
+## Poll for Completion
 
-<pre><code>
+```python
 import time
 
 while True:
@@ -133,13 +65,13 @@ while True:
     time.sleep(60)
 
 print("Batch complete")
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Retrieve Results</h2>
+## Retrieve Results
 
-<pre><code>
+```python
 for result in client.messages.batches.results(message_batch.id):
 
     match result.result.type:
@@ -155,23 +87,23 @@ for result in client.messages.batches.results(message_batch.id):
 
         case "expired":
             print("Expired")
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Cancel a Batch</h2>
+## Cancel a Batch
 
-<pre><code>
+```python
 cancelled = client.messages.batches.cancel(message_batch.id)
 
 print(cancelled.processing_status)
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Batch with Prompt Caching</h2>
+## Batch with Prompt Caching
 
-<pre><code>
+```python
 shared_system = [
     {"type": "text", "text": "You are a literary analyst."},
     {
@@ -195,13 +127,13 @@ message_batch = client.messages.batches.create(
         for i, question in enumerate(questions)
     ]
 )
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Full End-to-End Example</h2>
+## Full End-to-End Example
 
-<pre><code>
+```python
 import anthropic
 import time
 
@@ -249,13 +181,8 @@ results = {}
 for result in client.messages.batches.results(batch.id):
 
     if result.result.type == "succeeded":
-
         results[result.custom_id] = result.result.message.content[0].text
-
 
 for custom_id, value in results.items():
     print(custom_id, value)
-</code></pre>
-
-</body>
-</html>
+```
