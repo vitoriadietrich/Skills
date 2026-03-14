@@ -1,111 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Claude API — Ruby</title>
+# Claude API — Ruby
 
-<style>
-body{
- font-family: Arial, Helvetica, sans-serif;
- background:#0f172a;
- color:#e5e7eb;
- margin:0;
- padding:40px;
-}
+> **Note:** O SDK Ruby suporta a Claude API.  
+> Um tool runner está disponível em beta via `client.beta.messages.tool_runner()`.  
+> O Agent SDK ainda não está disponível para Ruby.
 
-h1{ color:#38bdf8; }
-h2{ color:#22c55e; margin-top:40px; }
-h3{ color:#facc15; }
+---
 
-p{ color:#cbd5f5; }
+## Installation
 
-pre{
- background:#020617;
- padding:20px;
- border-radius:10px;
- overflow:auto;
- border:1px solid #1e293b;
-}
+```bash
+gem install anthropic
+```
 
-code{ color:#38bdf8; }
+---
 
-hr{
- border:none;
- border-top:1px solid #1e293b;
- margin:40px 0;
-}
+## Client Initialization
 
-blockquote{
- border-left:4px solid #38bdf8;
- padding-left:15px;
- color:#cbd5f5;
-}
-</style>
-</head>
+```ruby
+require "anthropic"
 
-<body>
-
-<h1>Claude API — Ruby</h1>
-
-<blockquote>
-<strong>Note:</strong> The Ruby SDK supports the Claude API. A tool runner is available in beta via <code>client.beta.messages.tool_runner()</code>. Agent SDK is not yet available for Ruby.
-</blockquote>
-
-<h2>Installation</h2>
-
-<pre><code>gem install anthropic</code></pre>
-
-<h2>Client Initialization</h2>
-
-<pre><code>require "anthropic"
-
-# Default (uses ANTHROPIC_API_KEY env var)
+# Default (usa a variável de ambiente ANTHROPIC_API_KEY)
 client = Anthropic::Client.new
 
-# Explicit API key
+# Chave de API explícita
 client = Anthropic::Client.new(api_key: "your-api-key")
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Basic Message Request</h2>
+## Basic Message Request
 
-<pre><code>message = client.messages.create(
+```ruby
+message = client.messages.create(
   model: :"claude-opus-4-6",
   max_tokens: 1024,
   messages: [
     { role: "user", content: "What is the capital of France?" }
   ]
 )
+
 puts message.content.first.text
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Streaming</h2>
+## Streaming
 
-<pre><code>stream = client.messages.stream(
+```ruby
+stream = client.messages.stream(
   model: :"claude-opus-4-6",
   max_tokens: 1024,
   messages: [{ role: "user", content: "Write a haiku" }]
 )
 
 stream.text.each { |text| print(text) }
-</code></pre>
+```
 
-<hr>
+---
 
-<h2>Tool Use</h2>
+## Tool Use
 
-<p>The Ruby SDK supports tool use via raw JSON schema definitions and also provides a beta tool runner for automatic tool execution.</p>
+O SDK Ruby suporta uso de ferramentas via definições de JSON schema e também fornece um tool runner beta para execução automática.
 
-<h3>Tool Runner (Beta)</h3>
+### Tool Runner (Beta)
 
-<pre><code>class GetWeatherInput &lt; Anthropic::BaseModel
+```ruby
+class GetWeatherInput < Anthropic::BaseModel
   required :location, String, doc: "City and state, e.g. San Francisco, CA"
 end
 
-class GetWeather &lt; Anthropic::BaseTool
+class GetWeather < Anthropic::BaseTool
   doc "Get the current weather for a location"
 
   input_schema GetWeatherInput
@@ -123,11 +87,8 @@ client.beta.messages.tool_runner(
 ).each_message do |message|
   puts message.content
 end
-</code></pre>
+```
 
-<h3>Manual Loop</h3>
+### Manual Loop
 
-<p>See the shared tool use concepts for the tool definition format and agentic loop pattern.</p>
-
-</body>
-</html>
+Veja o documento `shared/tool-use-concepts.md` para o formato de definição de ferramentas e padrão do agentic loop.
